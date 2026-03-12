@@ -107,17 +107,17 @@ Get the fraud detection profile for a user.
 
 ## Design Decisions
 
-**Why Welford's algorithm?** Rolling z-score without storing transaction history. O(1) space per user vs O(n) for naive approaches — critical at scale.
+**Why Welford's algorithm?** Rolling z-score without storing transaction history. O(1) space per user vs O(n) for naive approaches, which matters at scale.
 
-**Why Isolation Forest?** Unsupervised — no labeled fraud data needed. Works on cold-start. Complements rule-based signals rather than replacing them.
+**Why Isolation Forest?** Unsupervised, so no labeled fraud data needed. Works on cold-start. Complements rule-based signals rather than replacing them.
 
 **Why weighted aggregation?** Each detector has different reliability. The rules engine (weight 2.0) has zero false-negative rate for known bad actors. The ML model (weight 0.8) has lower weight during warm-up.
 
-**Why `collections.deque` for velocity?** The sliding window needs O(1) pop from the left. Python lists are O(n) for this — deque makes it O(1).
+**Why `collections.deque` for velocity?** The sliding window needs O(1) pop from the left. Python lists are O(n) for this, so deque makes it O(1).
 
 ## Interview Talking Points
 
 - **Scaling**: Stateless design means horizontal scaling behind a load balancer. User state could move to Redis for distributed deployments.
-- **Concurrency**: All user state protected by `threading.Lock` — safe for multi-threaded WSGI/ASGI servers.
-- **False positive tuning**: Isolation Forest `contamination` parameter is configurable. Rules thresholds are externalized as constants.
-- **Explainability**: Every decision includes `triggered_rules` — a full audit trail of why a transaction was flagged.
+- **Concurrency**: All user state protected by `threading.Lock`, which keeps it safe for multi-threaded WSGI/ASGI servers.
+- **False positive tuning**: Isolation Forest `contamination` parameter is configurable.
+- **Explainability**: Every decision includes `triggered_rules`, giving a full audit trail of why a transaction was flagged.
